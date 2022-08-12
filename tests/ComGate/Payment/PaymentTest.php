@@ -5,6 +5,7 @@ namespace Testing\ComGate\Payment;
 use Heroyt\ComGate\ConnectionInterface;
 use Heroyt\ComGate\Payment\Country;
 use Heroyt\ComGate\Payment\Currency;
+use Heroyt\ComGate\Payment\Lang;
 use Heroyt\ComGate\Payment\Payment;
 use PHPUnit\Framework\TestCase;
 use Testing\ComGate\Connection;
@@ -77,6 +78,12 @@ class PaymentTest extends TestCase
 		self::assertEquals($data, $payment->getCreateData());
 		$data['dynamicExpiration'] = true;
 		$payment->dynamicExpiration = true;
+		self::assertEquals($data, $payment->getCreateData());
+		$data['lang'] = Lang::EN->value;
+		$payment->lang = Lang::EN;
+		self::assertEquals($data, $payment->getCreateData());
+		$data['name'] = 'asdasd';
+		$payment->name = 'asdasd';
 		self::assertEquals($data, $payment->getCreateData());
 	}
 
@@ -167,6 +174,7 @@ class PaymentTest extends TestCase
 					'eetData'        => [
 						'test' => 'aaa',
 					],
+					'lang'           => Lang::EN,
 				]
 			],
 			[
@@ -180,6 +188,7 @@ class PaymentTest extends TestCase
 					'eetData'        => [
 						'test' => 'aaa',
 					],
+					'name'           => 'asdjasda',
 				]
 			],
 		];
@@ -207,6 +216,56 @@ class PaymentTest extends TestCase
 
 	public function getFieldsInvalid() : array {
 		return [
+			[
+				[
+					'price'    => 100,
+					'currency' => Currency::CZK,
+					'label'    => 'invalidData',
+					'refId'    => '1234',
+					'email'    => 'test@email.cz',
+				],
+				'The received data is invalid.'
+			],
+			[
+				[
+					'price'    => 100,
+					'currency' => Currency::CZK,
+					'label'    => 'invalid1',
+					'refId'    => '1234',
+					'email'    => 'test@email.cz',
+				],
+				'API request failed: DBerror'
+			],
+			[
+				[
+					'price'    => 100,
+					'currency' => Currency::CZK,
+					'label'    => 'invalid2',
+					'refId'    => '1234',
+					'email'    => 'test@email.cz',
+				],
+				'Missing or invalid transaction ID received from the API.'
+			],
+			[
+				[
+					'price'    => 100,
+					'currency' => Currency::CZK,
+					'label'    => 'invalid3',
+					'refId'    => '1234',
+					'email'    => 'test@email.cz',
+				],
+				'Missing or invalid redirect URL received from the API. ""'
+			],
+			[
+				[
+					'price'    => 100,
+					'currency' => Currency::CZK,
+					'label'    => 'invalid4',
+					'refId'    => '1234',
+					'email'    => 'test@email.cz',
+				],
+				'Missing or invalid redirect URL received from the API. "invalidUrl"'
+			],
 			[
 				[
 					'currency' => Currency::CZK,

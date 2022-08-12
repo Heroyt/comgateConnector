@@ -63,8 +63,8 @@ class Payment
 			throw new ApiException('The received data is invalid.');
 		}
 		// General API error
-		if ((int) $data['code'] !== ReturnCodes::OK->value || $response->getStatusCode() > 399) {
-			throw new ApiResponseException($response);
+		if (((int) $data['code']) !== ReturnCodes::OK->value || $response->getStatusCode() > 399) {
+			throw new ApiResponseException($response, $data);
 		}
 		// Invalid received data
 		if (empty($data['transId'])) {

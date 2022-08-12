@@ -37,15 +37,26 @@ class Connection implements ConnectionInterface
 	 * @return ResponseInterface
 	 */
 	public function post(string $path, array $data = []) : ResponseInterface {
+		$label = $data['label'] ?? '';
 		return match ($path) {
 			'/create', 'create', 'create/' => new Response(
 				200,
 				[
-					'Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8',
+					'Content-Type' => $label === 'invalidData' ? 'text/plain' : 'application/x-www-form-urlencoded; charset=utf-8',
 				],
-				'code=0&message=OK&transId=AB12-EF34-IJ56&redirect=https%3A%2F%2Fpayments.comgate.cz%2Fclient%2Finstructions%2Findex%3Fid%3DABCDEFGHI'
+				$this->getCreateResponse($label)
 			),
 			default => new Response(404, body: 'Page not found'),
+		};
+	}
+
+	private function getCreateResponse(string $label) : string {
+		return match ($label) {
+			'invalid1' => 'code=1200&message=DBerror',
+			'invalid2' => 'code=0&message=OK',
+			'invalid3' => 'code=0&message=OK&transId=AB12-EF34-IJ56',
+			'invalid4' => 'code=0&message=OK&transId=AB12-EF34-IJ56&redirect=invalidUrl',
+			default => 'code=0&message=OK&transId=AB12-EF34-IJ56&redirect=https%3A%2F%2Fpayments.comgate.cz%2Fclient%2Finstructions%2Findex%3Fid%3DABCDEFGHI'
 		};
 	}
 }
