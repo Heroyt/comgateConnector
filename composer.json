@@ -8,9 +8,17 @@
 			"role": "lead"
 		}
 	],
+	"scripts": {
+		"test": "./vendor/bin/phpunit"
+	},
 	"autoload": {
 		"psr-4": {
 			"Heroyt\\ComGate\\": "src/ComGate/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Testing\\ComGate\\": "tests/ComGate/"
 		}
 	},
 	"require": {
@@ -19,9 +27,9 @@
 		"guzzlehttp/guzzle": "^7.4",
 		"nette/utils": "^3.2",
 		"psr/log": "^3.0"
-	}
-	,
+	},
 	"require-dev": {
-		"roave/security-advisories": "dev-latest"
+		"roave/security-advisories": "dev-latest",
+		"phpunit/phpunit": "^9.5"
 	}
 }

@@ -13,7 +13,7 @@ class ResponseParser
 		}
 
 		if (str_contains($response->getHeader('Content-Type')[0] ?? '', 'application/json')) {
-			return json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+			return json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 		}
 		if (str_contains($response->getHeader('Content-Type')[0], 'application/x-www-form-urlencoded')) {
 			parse_str($response->getBody()->getContents(), $data);

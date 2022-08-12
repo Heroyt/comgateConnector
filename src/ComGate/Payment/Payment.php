@@ -36,7 +36,7 @@ class Payment
 	public string       $applePayPayload   = '';
 	public string       $expirationTime    = '';
 	public ?bool        $dynamicExpiration = null;
-	private string      $transId;
+	public string       $transId;
 
 	public function __construct(
 		private readonly ConnectionInterface $connection,
@@ -70,8 +70,8 @@ class Payment
 		if (empty($data['transId'])) {
 			throw new ApiException('Missing or invalid transaction ID received from the API.');
 		}
-		if (empty($data['redirect']) || Validators::isUrl($data['redirect'])) {
-			throw new ApiException('Missing or invalid redirect URL received from the API.');
+		if (empty($data['redirect']) || !Validators::isUrl($data['redirect'])) {
+			throw new ApiException('Missing or invalid redirect URL received from the API. "'.($data['redirect'] ?? '').'"');
 		}
 
 		$this->transId = $data['transId'];
@@ -90,15 +90,15 @@ class Payment
 			// Check mandatory fields
 			!isset($this->price) => throw new ValidationException('Missing required field: price'),
 			!isset($this->currency) => throw new ValidationException('Missing required field: currency'),
-			empty($this->label) => throw new ValidationException('Missing required field: label'),
+			!isset($this->label) => throw new ValidationException('Missing required field: label'),
 			!isset($this->refId) => throw new ValidationException('Missing required field: refId'),
 			empty($this->method) => throw new ValidationException('Missing required field: method'),
 			empty($this->email) => throw new ValidationException('Missing required field: email'),
 
 			// Check valid values
 			!Validators::isEmail($this->email) => throw new ValidationException('Invalid value: email'),
-			trim($this->label) === '' || strlen(trim($this->label)) > 16 => throw new ValidationException('Invalid value: label. Must be between 1 and 16 characters long'),
-			!empty($this->expirationTime) && preg_match('/\d+[mhd]/', $this->expirationTime) !== 1 => throw new ValidationException('Invalid value: expirationTime'),
+			empty(trim($this->label)) || strlen(trim($this->label)) > 16 => throw new ValidationException('Invalid value: label. Must be between 1 and 16 characters long'),
+			!empty($this->expirationTime) && preg_match('/^\d+[mhd]$/', $this->expirationTime) !== 1 => throw new ValidationException('Invalid value: expirationTime'),
 			isset($this->eetData) && is_string($this->eetData) && @json_decode($this->eetData, true) === null && json_last_error() !== JSON_ERROR_NONE => throw new ValidationException('Invalid value: eetData. Must be a valid JSON object.'),
 
 			// Check minimum price based on currency
@@ -163,10 +163,10 @@ class Payment
 		if (isset($this->embedded)) {
 			$data['embedded'] = $this->embedded;
 		}
-		if (isset($this->applePayPayload)) {
-			$data['applePayPayload'] = $this->applePayPayload;
+		if (!empty($this->applePayPayload)) {
+			$data['applePayPayload'] = base64_encode($this->applePayPayload);
 		}
-		if (isset($this->expirationTime)) {
+		if (!empty($this->expirationTime)) {
 			$data['expirationTime'] = $this->expirationTime;
 		}
 		if (isset($this->dynamicExpiration)) {
@@ -174,13 +174,6 @@ class Payment
 		}
 
 		return $data;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getTransId() : string {
-		return $this->transId;
 	}
 
 }
