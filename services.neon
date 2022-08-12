@@ -1,0 +1,9 @@
+parameters:
+	comgate:
+		host: "https://payments.comgate.cz/v1.0/"
+		secret: ""
+		merchant: ""
+		test: true
+services:
+	comgate.connector: Heroyt\ComGate\Connection(%comgate.host%, %comgate.merchant%, %comgate.secret%, %comgate.test%)
+	comgate.payment: Heroyt\ComGate\Payment\Payment(@comgate.connector)

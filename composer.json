@@ -1,0 +1,27 @@
+{
+	"name": "heroyt/comgate-connector",
+	"type": "package",
+	"authors": [
+		{
+			"name": "Tomáš Vojík",
+			"email": "vojik@wboy.cz",
+			"role": "lead"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"Heroyt\\ComGate\\": "src/ComGate/"
+		}
+	},
+	"require": {
+		"nette/di": "^3.0",
+		"php": ">=8.1",
+		"guzzlehttp/guzzle": "^7.4",
+		"nette/utils": "^3.2",
+		"psr/log": "^3.0"
+	}
+	,
+	"require-dev": {
+		"roave/security-advisories": "dev-latest"
+	}
+}
