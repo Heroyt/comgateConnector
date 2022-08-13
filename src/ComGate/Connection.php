@@ -13,8 +13,11 @@ use Psr\Log\LoggerInterface;
 class Connection implements ConnectionInterface
 {
 
+	public readonly string $version;
+
 	/**
 	 * @param string               $host     Host gateway URL
+	 * @param string               $version  API version identifier - will be prepended to all paths
 	 * @param string               $merchant Merchant name = e-shop identifier
 	 * @param string               $secret   Secret password
 	 * @param bool                 $test     Using testing or production environment
@@ -22,11 +25,13 @@ class Connection implements ConnectionInterface
 	 */
 	public function __construct(
 		public readonly string           $host,
+		string                           $version,
 		public readonly string           $merchant,
 		public readonly string           $secret,
 		public readonly bool             $test = false,
 		public readonly ?LoggerInterface $logger = null,
 	) {
+		$this->version = trim(str_replace('/', '', $version));
 	}
 
 	/**
@@ -39,10 +44,13 @@ class Connection implements ConnectionInterface
 	 * @throws GuzzleException
 	 */
 	public function get(string $path, array $params = []) : ResponseInterface {
+		if ($path[0] !== '/') {
+			$path = '/'.$path;
+		}
 		$response = $this
 			->getClient()
 			->get(
-				$path,
+				$this->version.$path,
 				[
 					'query' => $params,
 				]
@@ -114,10 +122,14 @@ class Connection implements ConnectionInterface
 			$data['secret'] = $this->secret;
 		}
 
+		if ($path[0] !== '/') {
+			$path = '/'.$path;
+		}
+
 		$response = $this
 			->getClient()
 			->post(
-				$path,
+				$this->version.$path,
 				[
 					'form_params' => $data,
 				]
