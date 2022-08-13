@@ -3,6 +3,7 @@
 namespace Testing\ComGate\Payment;
 
 use Heroyt\ComGate\ConnectionInterface;
+use Heroyt\ComGate\Payment\Actions\CreatePaymentAction;
 use Heroyt\ComGate\Payment\Country;
 use Heroyt\ComGate\Payment\Currency;
 use Heroyt\ComGate\Payment\Lang;
@@ -39,52 +40,54 @@ class PaymentTest extends TestCase
 		$payment->refId = '1234   ';
 		$payment->email = 'test@email.cz';
 
+		$action = new CreatePaymentAction($payment);
+
 		// Basic data
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 
 		// Add optional data
 		$data['country'] = Country::CZ->value;
 		$payment->country = Country::CZ;
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['account'] = '1234567890';
 		$payment->account = '1234567890';
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['phone'] = '123456789';
 		$payment->phone = '123456789';
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['preauth'] = true;
 		$payment->preauth = true;
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['initRecurring'] = true;
 		$payment->initRecurring = true;
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['verification'] = true;
 		$payment->verification = true;
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['eetReport'] = true;
 		$payment->eetReport = true;
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['eetData'] = '{"hello":"world"}';
 		$payment->eetData = ['hello' => 'world'];
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['embedded'] = true;
 		$payment->embedded = true;
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['applePayPayload'] = base64_encode('test');
 		$payment->applePayPayload = 'test';
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['expirationTime'] = '10m';
 		$payment->expirationTime = '10m';
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['dynamicExpiration'] = true;
 		$payment->dynamicExpiration = true;
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['lang'] = Lang::EN->value;
 		$payment->lang = Lang::EN;
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 		$data['name'] = 'asdasd';
 		$payment->name = 'asdasd';
-		self::assertEquals($data, $payment->getCreateData());
+		self::assertEquals($data, $action->getData());
 	}
 
 	public function getFields() : array {
