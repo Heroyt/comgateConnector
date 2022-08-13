@@ -3,6 +3,7 @@
 namespace Testing\ComGate\Payment;
 
 use Heroyt\ComGate\ConnectionInterface;
+use Heroyt\ComGate\Payment\Actions\CancelPreauthPaymentAction;
 use Heroyt\ComGate\Payment\Actions\CapturePreauthPaymentAction;
 use Heroyt\ComGate\Payment\Actions\CreatePaymentAction;
 use Heroyt\ComGate\Payment\Country;
@@ -564,6 +565,73 @@ class PaymentTest extends TestCase
 		$this->expectExceptionMessage($message);
 
 		$payment->capturePreauth($amount);
+	}
+
+	public function testGetCancelPreauthData() : void {
+		$payment = new Payment($this->connection);
+
+		$data = [
+			'transId' => 'AB12-EF34-IJ56',
+		];
+
+		$payment->transId = 'AB12-EF34-IJ56';
+
+		// Should be omitted
+		$payment->label = 'ahoj';
+
+		$action = new CancelPreauthPaymentAction($payment);
+
+		// Basic data
+		self::assertEquals($data, $action->getData());
+	}
+
+	public function testCancelPreauth() : void {
+		$payment = new Payment($this->connection);
+
+		$payment->transId = 'AB12-EF34-IJ56';
+
+		$payment->cancelPreauth();
+
+		// Manual send
+		$action = new CancelPreauthPaymentAction($payment);
+		self::assertTrue($action->process($this->connection));
+	}
+
+	public function getFieldsInvalidCancelPreauth() : array {
+		return [
+			[
+				[],
+				'Missing required field: transId',
+			],
+			[
+				['transId' => 'ABCD'],
+				'The received data is invalid.',
+				'invalidData',
+			],
+			[
+				['transId' => 'ABCD'],
+				'API request failed: DBerror',
+				'invalid',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider getFieldsInvalidCancelPreauth
+	 *
+	 * @return void
+	 */
+	public function testCancelPreauthInvalid(array $fieldsPayment, string $message, string $switch = '') : void {
+		$payment = new Payment($this->connection);
+		$this->connection->switch = $switch;
+
+		foreach ($fieldsPayment as $key => $value) {
+			$payment->$key = $value;
+		}
+
+		$this->expectExceptionMessage($message);
+
+		$payment->cancelPreauth();
 	}
 
 }

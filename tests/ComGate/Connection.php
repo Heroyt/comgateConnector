@@ -48,7 +48,7 @@ class Connection implements ConnectionInterface
 				],
 				$this->getCreateResponse($label)
 			),
-			'/capturePreauth', 'capturePreauth', 'capturePreauth/' => new Response(
+			'/capturePreauth', 'capturePreauth', 'capturePreauth/', '/cancelPreauth', 'cancelPreauth', 'cancelPreauth/' => new Response(
 				200,
 				[
 					'Content-Type' => $label === 'invalidData' ? 'text/plain' : 'application/x-www-form-urlencoded; charset=utf-8',
