@@ -6,6 +6,7 @@ use Heroyt\ComGate\ConnectionInterface;
 use Heroyt\ComGate\Exceptions\ApiException;
 use Heroyt\ComGate\Exceptions\ApiResponseException;
 use Heroyt\ComGate\Exceptions\ValidationException;
+use Heroyt\ComGate\Payment\Actions\CancelPreauthPaymentAction;
 use Heroyt\ComGate\Payment\Actions\CapturePreauthPaymentAction;
 use Heroyt\ComGate\Payment\Actions\CreatePaymentAction;
 
@@ -52,6 +53,15 @@ class Payment
 	 */
 	public function create() : string {
 		return (new CreatePaymentAction($this))->process($this->connection);
+	}
+
+	/**
+	 * @throws ApiException
+	 * @throws ApiResponseException
+	 * @throws ValidationException
+	 */
+	public function cancelPreauth() : void {
+		(new CancelPreauthPaymentAction($this))->process($this->connection);
 	}
 
 	/**
