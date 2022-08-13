@@ -4,6 +4,7 @@ namespace Heroyt\ComGate\Payment;
 
 /**
  * @property string $value
+ * @method static tryFrom(mixed $curr)
  */
 enum Currency : string
 {

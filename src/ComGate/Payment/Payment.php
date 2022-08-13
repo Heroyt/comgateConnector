@@ -39,9 +39,15 @@ class Payment
 	public ?bool        $dynamicExpiration = null;
 	public string       $transId;
 
+	// Optional values from API
+	public string $payerId;
+	public string $payerName;
+	public string $payerAcc;
+	public string $fee;
+	public State  $state = State::PENDING;
+
 	public function __construct(
 		private readonly ConnectionInterface $connection,
-		public readonly State                $state = State::PENDING,
 	) {
 	}
 
