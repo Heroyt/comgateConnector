@@ -5,7 +5,8 @@ namespace Heroyt\ComGate\Response;
 /**
  * @property int $value
  * @method static tryFrom(int $code)
- * @method static from(int $code)
+ * @method static from(int $code) : ReturnCodes
+ * @method static cases() : ReturnCodes[]
  */
 enum ReturnCodes : int
 {

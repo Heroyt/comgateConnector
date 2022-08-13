@@ -3,6 +3,7 @@
 namespace Testing\ComGate\Payment;
 
 use Heroyt\ComGate\ConnectionInterface;
+use Heroyt\ComGate\Payment\Actions\CapturePreauthPaymentAction;
 use Heroyt\ComGate\Payment\Actions\CreatePaymentAction;
 use Heroyt\ComGate\Payment\Country;
 use Heroyt\ComGate\Payment\Currency;
@@ -90,7 +91,7 @@ class PaymentTest extends TestCase
 		self::assertEquals($data, $action->getData());
 	}
 
-	public function getFields() : array {
+	public function getFieldsCreate() : array {
 		return [
 			[
 				[
@@ -198,7 +199,7 @@ class PaymentTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider getFields
+	 * @dataProvider getFieldsCreate
 	 *
 	 * @param array $fields
 	 *
@@ -217,7 +218,7 @@ class PaymentTest extends TestCase
 		self::assertEquals(urldecode('https%3A%2F%2Fpayments.comgate.cz%2Fclient%2Finstructions%2Findex%3Fid%3DABCDEFGHI'), $redirect);
 	}
 
-	public function getFieldsInvalid() : array {
+	public function getFieldsInvalidCreate() : array {
 		return [
 			[
 				[
@@ -451,7 +452,7 @@ class PaymentTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider getFieldsInvalid
+	 * @dataProvider getFieldsInvalidCreate
 	 *
 	 * @param array  $fields
 	 * @param string $message
@@ -469,4 +470,100 @@ class PaymentTest extends TestCase
 
 		$payment->create();
 	}
+
+	public function testGetCapturePreauthData() : void {
+		$payment = new Payment($this->connection);
+
+		$data = [
+			'transId' => 'AB12-EF34-IJ56',
+		];
+
+		$payment->transId = 'AB12-EF34-IJ56';
+
+		// Should be omitted
+		$payment->label = 'ahoj';
+
+		$action = new CapturePreauthPaymentAction($payment);
+
+		// Basic data
+		self::assertEquals($data, $action->getData());
+
+		// Add optional data
+		$action->amount = 20;
+		$data['amount'] = 20;
+		self::assertEquals($data, $action->getData());
+	}
+
+	public function testCapturePreauth() : void {
+		$payment = new Payment($this->connection);
+
+		$payment->transId = 'AB12-EF34-IJ56';
+
+		$payment->capturePreauth();
+
+		$payment->capturePreauth(20);
+
+		$payment->price = 50;
+		$payment->capturePreauth(20);
+
+		// Manual send
+		$action = new CapturePreauthPaymentAction($payment);
+		self::assertTrue($action->process($this->connection));
+	}
+
+	public function getFieldsInvalidCapturePreauth() : array {
+		return [
+			[
+				[],
+				null,
+				'Missing required field: transId',
+			],
+			[
+				['transId' => 'ABCD'],
+				0.0,
+				'Invalid value: amount. Must be grater than 0 and less then the total transaction amount.',
+			],
+			[
+				['transId' => 'ABCD'],
+				-10.0,
+				'Invalid value: amount. Must be grater than 0 and less then the total transaction amount.',
+			],
+			[
+				['transId' => 'ABCD', 'price' => 10],
+				20,
+				'Invalid value: amount. Must be grater than 0 and less then the total transaction amount.',
+			],
+			[
+				['transId' => 'ABCD'],
+				null,
+				'The received data is invalid.',
+				'invalidData',
+			],
+			[
+				['transId' => 'ABCD'],
+				null,
+				'API request failed: DBerror',
+				'invalid',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider getFieldsInvalidCapturePreauth
+	 *
+	 * @return void
+	 */
+	public function testCapturePreauthInvalid(array $fieldsPayment, ?float $amount, string $message, string $switch = '') : void {
+		$payment = new Payment($this->connection);
+		$this->connection->switch = $switch;
+
+		foreach ($fieldsPayment as $key => $value) {
+			$payment->$key = $value;
+		}
+
+		$this->expectExceptionMessage($message);
+
+		$payment->capturePreauth($amount);
+	}
+
 }

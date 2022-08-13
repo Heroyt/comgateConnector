@@ -12,6 +12,8 @@ use Psr\Http\Message\ResponseInterface;
 class Connection implements ConnectionInterface
 {
 
+	public string $switch = '';
+
 	/**
 	 * Call a GET request on the API
 	 *
@@ -37,7 +39,7 @@ class Connection implements ConnectionInterface
 	 * @return ResponseInterface
 	 */
 	public function post(string $path, array $data = []) : ResponseInterface {
-		$label = $data['label'] ?? '';
+		$label = $data['label'] ?? $this->switch;
 		return match ($path) {
 			'/create', 'create', 'create/' => new Response(
 				200,
@@ -45,6 +47,13 @@ class Connection implements ConnectionInterface
 					'Content-Type' => $label === 'invalidData' ? 'text/plain' : 'application/x-www-form-urlencoded; charset=utf-8',
 				],
 				$this->getCreateResponse($label)
+			),
+			'/capturePreauth', 'capturePreauth', 'capturePreauth/' => new Response(
+				200,
+				[
+					'Content-Type' => $label === 'invalidData' ? 'text/plain' : 'application/x-www-form-urlencoded; charset=utf-8',
+				],
+				$this->getCapturePreauthResponse($label)
 			),
 			default => new Response(404, body: 'Page not found'),
 		};
@@ -57,6 +66,13 @@ class Connection implements ConnectionInterface
 			'invalid3' => 'code=0&message=OK&transId=AB12-EF34-IJ56',
 			'invalid4' => 'code=0&message=OK&transId=AB12-EF34-IJ56&redirect=invalidUrl',
 			default => 'code=0&message=OK&transId=AB12-EF34-IJ56&redirect=https%3A%2F%2Fpayments.comgate.cz%2Fclient%2Finstructions%2Findex%3Fid%3DABCDEFGHI'
+		};
+	}
+
+	private function getCapturePreauthResponse(string $label) : string {
+		return match ($label) {
+			'invalid' => 'code=1200&message=DBerror',
+			default => 'code=0&message=OK',
 		};
 	}
 }
