@@ -78,6 +78,9 @@ class Connection implements ConnectionInterface
 				'base_uri'        => $this->host,
 				'allow_redirects' => true,
 				'synchronous'     => true,
+				'headers'         => [
+					'Accept' => 'application/x-www-form-urlencoded, application/json, text/plain'
+				],
 			]
 		);
 	}
@@ -97,6 +100,7 @@ class Connection implements ConnectionInterface
 		$this->logger->log($response->getStatusCode() < 400 ? 'info' : 'error', 'Response: '.$response->getStatusCode().' '.$response->getReasonPhrase());
 		$this->logger->debug('Headers: '.json_encode($response->getHeaders(), JSON_THROW_ON_ERROR));
 		$this->logger->debug('Body: '.$response->getBody()->getContents());
+		$response->getBody()->rewind();
 	}
 
 	/**
@@ -111,6 +115,13 @@ class Connection implements ConnectionInterface
 	 * @throws GuzzleException
 	 */
 	public function post(string $path, array $data = []) : ResponseInterface {
+		// Convert bool value to string
+		foreach ($data as $key => $value) {
+			if (is_bool($value)) {
+				$data[$key] = $value ? 'true' : 'false';
+			}
+		}
+
 		// Append mandatory auth parameters
 		if (!isset($data['merchant'])) {
 			$data['merchant'] = $this->merchant;

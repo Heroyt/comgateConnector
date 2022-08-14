@@ -4,7 +4,6 @@ namespace Testing\ComGate\API;
 
 use Heroyt\ComGate\Exceptions\ApiException;
 use Heroyt\ComGate\Payment\Currency;
-use Heroyt\ComGate\Payment\Lang;
 use Heroyt\ComGate\Payment\Payment;
 use Nette\DI\Container;
 use Nette\DI\ContainerLoader;
@@ -31,104 +30,11 @@ class ConnectionTest extends TestCase
 		return [
 			[
 				[
-					'price'    => 1,
+					'price'    => 100,
 					'currency' => Currency::CZK,
 					'label'    => 'ahoj',
 					'refId'    => '1234',
 					'email'    => 'test@email.cz',
-				]
-			],
-			[
-				[
-					'price'    => 600,
-					'currency' => Currency::USD,
-					'label'    => 'ahoj',
-					'refId'    => '1234',
-					'email'    => 'test@email.cz',
-				]
-			],
-			[
-				[
-					'price'    => 0.1,
-					'currency' => Currency::EUR,
-					'label'    => 'ahoj',
-					'refId'    => '1234',
-					'email'    => 'test@email.cz',
-				]
-			],
-			[
-				[
-					'price'    => 100,
-					'currency' => Currency::HUF,
-					'label'    => 'ahoj',
-					'refId'    => '1234',
-					'email'    => 'test@email.cz',
-				]
-			],
-			[
-				[
-					'price'    => 5,
-					'currency' => Currency::RON,
-					'label'    => 'ahoj',
-					'refId'    => '1234',
-					'email'    => 'test@email.cz',
-				]
-			],
-			[
-				[
-					'price'    => 0.5,
-					'currency' => Currency::NOK,
-					'label'    => 'ahoj',
-					'refId'    => '1234',
-					'email'    => 'test@email.cz',
-				]
-			],
-			[
-				[
-					'price'    => 0.5,
-					'currency' => Currency::SEK,
-					'label'    => 'ahoj',
-					'refId'    => '1234',
-					'email'    => 'test@email.cz',
-				]
-			],
-			[
-				[
-					'price'          => 60,
-					'currency'       => Currency::GBP,
-					'label'          => 'a',
-					'refId'          => '1234',
-					'email'          => 'test@email.cz',
-					'expirationTime' => '10m',
-					'eetData'        => '{"test":"aaaa"}',
-				]
-			],
-			[
-				[
-					'price'          => 60,
-					'currency'       => Currency::GBP,
-					'label'          => 'abcddadiusldwqpd',
-					'refId'          => '1234',
-					'email'          => 'test@email.cz',
-					'expirationTime' => '5d',
-					'eetData'        => [
-						'test' => 'aaa',
-					],
-					'lang'           => Lang::EN,
-				]
-			],
-			[
-				[
-					'price'          => 60,
-					'currency'       => Currency::GBP,
-					'label'          => 'abcddadiusldwqpd',
-					'refId'          => '1234',
-					'email'          => 'test@email.cz',
-					'expirationTime' => '655h',
-					'eetData'        => [
-						'test' => 'aaa',
-					],
-					'name'           => 'asdjasda',
 				]
 			],
 		];
@@ -159,6 +65,7 @@ class ConnectionTest extends TestCase
 		}
 		self::assertNotEmpty($payment->transId);
 		self::assertNotEmpty($redirect);
+		echo $redirect.PHP_EOL;
 	}
 
 }
