@@ -5,6 +5,7 @@ namespace Testing\ComGate\API;
 use Heroyt\ComGate\Exceptions\ApiException;
 use Heroyt\ComGate\Payment\Currency;
 use Heroyt\ComGate\Payment\Payment;
+use Heroyt\ComGate\Payment\State;
 use Nette\DI\Container;
 use Nette\DI\ContainerLoader;
 use PHPUnit\Framework\TestCase;
@@ -47,7 +48,7 @@ class ConnectionTest extends TestCase
 	 *
 	 * @return void
 	 */
-	public function testPaymentCreation(array $fields) : void {
+	public function testPayment(array $fields) : void {
 		/** @var Payment $payment */
 		$payment = $this->container->getService('comgate.payment');
 
@@ -55,6 +56,7 @@ class ConnectionTest extends TestCase
 			$payment->$key = $value;
 		}
 
+		// Test creation
 		try {
 			$redirect = $payment->create();
 		} catch (ApiException $e) {
@@ -65,7 +67,20 @@ class ConnectionTest extends TestCase
 		}
 		self::assertNotEmpty($payment->transId);
 		self::assertNotEmpty($redirect);
-		echo $redirect.PHP_EOL;
+
+		// Test getting of status
+		/** @var Payment $paymentInfo */
+		$paymentInfo = $this->container->getService('comgate.payment');
+		$paymentInfo->transId = $payment->transId;
+
+		$paymentInfo->getStatus();
+
+		// Test if fields parsed from the API are the same
+		self::assertEquals($payment->label, $paymentInfo->label);
+		self::assertEquals($payment->refId, $paymentInfo->refId);
+		self::assertEquals($payment->email, $paymentInfo->email);
+		self::assertEquals($payment->currency, $paymentInfo->currency);
+		self::assertEquals(State::PENDING, $paymentInfo->state);
 	}
 
 }
