@@ -14,6 +14,8 @@ interface ConnectionInterface
 	 * @param array  $params GET parameters to send
 	 *
 	 * @return ResponseInterface
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function get(string $path, array $params = []) : ResponseInterface;
 
@@ -26,6 +28,8 @@ interface ConnectionInterface
 	 * @param array  $data Form data
 	 *
 	 * @return ResponseInterface
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function post(string $path, array $data = []) : ResponseInterface;
 }

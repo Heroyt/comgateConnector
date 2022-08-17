@@ -10,6 +10,7 @@ use Heroyt\ComGate\Payment\Country;
 use Heroyt\ComGate\Payment\Currency;
 use Heroyt\ComGate\Payment\Lang;
 use Heroyt\ComGate\Payment\Payment;
+use Heroyt\ComGate\Payment\State;
 use PHPUnit\Framework\TestCase;
 use Testing\ComGate\Connection;
 
@@ -632,6 +633,125 @@ class PaymentTest extends TestCase
 		$this->expectExceptionMessage($message);
 
 		$payment->cancelPreauth();
+	}
+
+	public function getFieldsGetStatus() : array {
+		return [
+			[
+				[
+					'transId' => 'AB12',
+				],
+				[
+					'state'    => State::PENDING,
+					'price'    => 100,
+					'currency' => Currency::CZK,
+					'label'    => 'test',
+					'refId'    => '123',
+					'email'    => 'test@test.cz'
+				],
+			],
+			[
+				[
+					'transId' => '1234',
+				],
+				[
+					'state'    => State::AUTHORIZED,
+					'price'    => 100,
+					'currency' => Currency::CZK,
+					'label'    => 'test',
+					'refId'    => '123',
+					'email'    => 'test@test.cz',
+					'payerId'  => '999',
+					'method'   => 'ALL',
+				],
+			],
+			[
+				[
+					'transId' => 'ABCD',
+				],
+				[
+					'state'     => State::CANCELLED,
+					'price'     => 80,
+					'currency'  => Currency::CZK,
+					'label'     => 'test',
+					'refId'     => '123',
+					'email'     => 'test@test.cz',
+					'payerId'   => '999',
+					'method'    => 'ALL',
+					'account'   => 'abcdefg',
+					'phone'     => '123456789',
+					'name'      => 'test',
+					'payerName' => 'TestTestovič',
+					'payerAcc'  => '888888',
+					'fee'       => '20',
+					'eetData'   => ['key' => 'value'],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider getFieldsGetStatus
+	 *
+	 * @param array $fields
+	 * @param array $expected
+	 *
+	 * @return void
+	 */
+	public function testGetStatus(array $fields, array $expected) : void {
+		$payment = new Payment($this->connection);
+
+		foreach ($fields as $key => $value) {
+			$payment->$key = $value;
+		}
+
+		$payment->getStatus();
+		foreach ($expected as $key => $value) {
+			self::assertEquals($value, $payment->$key);
+		}
+	}
+
+
+	public function getFieldsGetStatusInvalid() : array {
+		return [
+			[
+				[
+					'transId' => 'AB12',
+				],
+				'The received data is invalid.',
+				'invalidData',
+			],
+			[
+				[
+				],
+				'Missing required field: transId',
+			],
+			[
+				['transId' => 'invalid'],
+				'API request failed: DBerror',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider getFieldsGetStatusInvalid
+	 *
+	 * @param array  $fields
+	 * @param string $message
+	 * @param string $switch
+	 *
+	 * @return void
+	 */
+	public function testGetStatusInvalid(array $fields, string $message, string $switch = '') : void {
+		$payment = new Payment($this->connection);
+		$this->connection->switch = $switch;
+
+		foreach ($fields as $key => $value) {
+			$payment->$key = $value;
+		}
+
+		$this->expectExceptionMessage($message);
+		$payment->getStatus();
 	}
 
 }

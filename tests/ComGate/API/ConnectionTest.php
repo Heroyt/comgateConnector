@@ -2,6 +2,9 @@
 
 namespace Testing\ComGate\API;
 
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
+use Heroyt\ComGate\Connection;
 use Heroyt\ComGate\Exceptions\ApiException;
 use Heroyt\ComGate\Payment\Currency;
 use Heroyt\ComGate\Payment\Payment;
@@ -9,6 +12,7 @@ use Heroyt\ComGate\Payment\State;
 use Nette\DI\Container;
 use Nette\DI\ContainerLoader;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\RequestInterface;
 use Testing\ComGate\Logger;
 
 class ConnectionTest extends TestCase
@@ -25,6 +29,120 @@ class ConnectionTest extends TestCase
 			$compiler->loadConfig(__DIR__.'/../../services.neon');
 		});
 		$this->container = new $class;
+	}
+
+	public function testGet() : void {
+		$params = $this->container->getParameters();
+		$connection = new Connection($params['comgate']['host'], 'merchant', $params['comgate']['merchant'], $params['comgate']['secret']);
+
+		$response = $connection->get('ip');
+		self::assertSame(200, $response->getStatusCode());
+		$body = $response->getBody()->getContents();
+		self::assertNotEmpty($body);
+	}
+
+	public function testPost() : void {
+		$params = $this->container->getParameters();
+		$connection = new Connection($params['comgate']['host'], 'merchant', $params['comgate']['merchant'], $params['comgate']['secret']);
+
+		$response = $connection->post('ip');
+		self::assertSame(200, $response->getStatusCode());
+		$body = $response->getBody()->getContents();
+		self::assertNotEmpty($body);
+	}
+
+	public function testLogging() : void {
+		$params = $this->container->getParameters();
+		$connection = new Connection(
+			$params['comgate']['host'],
+			'merchant',
+			$params['comgate']['merchant'],
+			$params['comgate']['secret'],
+			true,
+			new Logger()
+		);
+
+		// Test response
+		$response = $connection->get('ip');
+		self::assertSame(200, $response->getStatusCode());
+		$body = $response->getBody()->getContents();
+		$response->getBody()->rewind();
+		self::assertNotEmpty($body);
+
+		// Test logging
+		self::assertEquals(
+			[
+				'level'   => 'info',
+				'message' => 'GET '.$params['comgate']['host'].'merchant/ip',
+				'context' => [],
+			],
+			Logger::$lines[0]
+		);
+		self::assertEquals(
+			[
+				'level'   => 'debug',
+				'message' => 'Headers: '.json_encode(
+																																																																																																																																																																																																																																																																																				[
+																																																																																																																																																																																																																																																																																			 'Accept'     => ['application/x-www-form-urlencoded, application/json, text/plain'],
+																																																																																																																																																																																																																																																																																			 'User-Agent' => ['GuzzleHttp/7'],
+																																																																																																																																																																																																																																																																																			 'Host'       => [parse_url($params['comgate']['host'], PHP_URL_HOST)],
+																																																																																																																																																																																																																																																																																		 ], JSON_THROW_ON_ERROR),
+				'context' => [],
+			],
+			Logger::$lines[1]
+		);
+		self::assertEquals(
+			[
+				'level'   => 'debug',
+				'message' => 'Body: ',
+				'context' => [],
+			],
+			Logger::$lines[2]
+		);
+		self::assertEquals(
+			[
+				'level'   => 'info',
+				'message' => 'Response: '.$response->getStatusCode().' '.$response->getReasonPhrase(),
+				'context' => [],
+			],
+			Logger::$lines[3]
+		);
+		self::assertEquals(
+			[
+				'level'   => 'debug',
+				'message' => 'Headers: '.json_encode($response->getHeaders(), JSON_THROW_ON_ERROR),
+				'context' => [],
+			],
+			Logger::$lines[4]
+		);
+		self::assertEquals(
+			[
+				'level'   => 'debug',
+				'message' => 'Body: '.$body,
+				'context' => [],
+			],
+			Logger::$lines[5]
+		);
+	}
+
+	public function testNoLogger() : void {
+		$params = $this->container->getParameters();
+		$connection = new Connection(
+			$params['comgate']['host'],
+			'merchant',
+			$params['comgate']['merchant'],
+			$params['comgate']['secret'],
+		);
+
+		Logger::$lines = [];
+		$connection->logResponse(new Response());
+		self::assertEmpty(Logger::$lines);
+
+		$handler = static function(RequestInterface $request, array $options) : int {
+			return 3314;
+		};
+
+		self::assertEquals(3314, $connection->logRequestMiddleware($handler)(new Request('GET', 'test'), []));
 	}
 
 	public function getFieldsCreate() : array {

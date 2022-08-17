@@ -41,6 +41,13 @@ class Connection implements ConnectionInterface
 	public function post(string $path, array $data = []) : ResponseInterface {
 		$label = $data['label'] ?? $this->switch;
 		return match ($path) {
+			'/status', 'status', 'status/' => new Response(
+				200,
+				[
+					'Content-Type' => $label === 'invalidData' ? 'text/plain' : 'application/x-www-form-urlencoded; charset=utf-8',
+				],
+				$this->getStatusResponse($data['transId'])
+			),
 			'/create', 'create', 'create/' => new Response(
 				200,
 				[
@@ -73,6 +80,15 @@ class Connection implements ConnectionInterface
 		return match ($label) {
 			'invalid' => 'code=1200&message=DBerror',
 			default => 'code=0&message=OK',
+		};
+	}
+
+	private function getStatusResponse(string $transId) : string {
+		return match ($transId) {
+			'AB12' => 'code=0&message=OK&status=PENDING&price=100&curr=CZK&label=test&refId=123&email=test@test.cz',
+			'1234' => 'code=0&message=OK&status=AUTHORIZED&price=100&curr=CZK&label=test&refId=123&email=test@test.cz&payerId=999&method=ALL',
+			'ABCD' => 'code=0&message=OK&status=CANCELLED&price=80&curr=CZK&label=test&refId=123&email=test@test.cz&payerId=999&method=ALL&account=abcdefg&phone=123456789&name=test&payerName=TestTestovič&payerAcc=888888&fee=20&eetData='.urlencode(json_encode(['key' => 'value'], JSON_THROW_ON_ERROR)),
+			'invalid' => 'code=1200&message=DBerror',
 		};
 	}
 }
