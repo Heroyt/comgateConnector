@@ -1,6 +1,7 @@
 {
 	"name": "heroyt/comgate-connector",
 	"type": "package",
+	"version": "v0.1",
 	"authors": [
 		{
 			"name": "Tomáš Vojík",
